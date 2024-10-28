@@ -1,3 +1,4 @@
-**/.idea/
-DayDayUp/build/
-DayDayUp/dist/
+/.idea
+/DayDayUp/build
+/DayDayUp/dist
+DayDayUp/DayDayUp.spec
