@@ -4,38 +4,71 @@
 
 import tkinter as tk
 import random
+import os
 
-# 一些随机的励志话语
-quotes = [
-    "为了明天的你",
-    "我爱你，孙浩男",
-    "一天只做一个功能",
-    "天道酬勤",
-    "不要等到结束才去改变",
-    "打铁还需自身硬",
-    "靠谁都不如靠自己",
-    "技术是为产品服务的",
-    "靠谱的人才是团队中最宝贵的财富",
-    "我不是一个可以靠突击来完成任务的人",
-]
+# 如果文件存在，则从文件中加载话语
+quotes = []
+if os.path.exists("quotes.txt"):
+    with open("quotes.txt", "r", encoding="utf-8") as file:
+        quotes = [line.strip() for line in file]
+else:
+    # 初始随机话语
+    quotes = [
+        "为了明天的你",
+        "我爱你，孙浩男",
+    ]
 
+# 保存话语到文件  quotes.txt 相当于数据库
+def save_quotes():
+    with open("quotes.txt", "w", encoding="utf-8") as file:
+        for quote in quotes:
+            file.write(quote + "\n")
+
+# 显示随机话语
 def show_quote():
-    # 创建一个窗口
-    window = tk.Tk()
-    window.title("励志话语")
-
-    # 随机选择一条话语
     quote = random.choice(quotes)
+    label.config(text=quote)
 
-    # 在窗口中显示话语
-    label = tk.Label(window, text=quote, font=("Arial", 20), padx=20, pady=20)
-    label.pack()
+# 添加新话语
+def add_quote():
+    def save_new_quote():
+        new_quote = entry.get().strip()
+        if new_quote:
+            quotes.append(new_quote)
+            save_quotes()  # 将新的话语保存到文件
+            entry_window.destroy()
 
-    # 关闭窗口按钮
-    button = tk.Button(window, text="关闭", command=window.quit)
-    button.pack()
+    entry_window = tk.Toplevel(window)
+    entry_window.title("添加新话语")
+    tk.Label(entry_window, text="请输入新的话语：").pack(pady=5)
+    entry = tk.Entry(entry_window, width=40)
+    entry.pack(padx=10, pady=10)
+    tk.Button(entry_window, text="保存", command=save_new_quote).pack(pady=5)
 
-    window.mainloop()
+# 创建主窗口
+window = tk.Tk()
+window.title("励志话语")
 
-if __name__ == "__main__":
-    show_quote()
+# 设置固定窗口大小
+window.geometry("400x250")
+window.resizable(False, False)
+
+# 显示初始话语
+label = tk.Label(window, text=random.choice(quotes), font=("Arial", 20), padx=20, pady=20)
+label.pack()
+
+# 随机话语按钮
+random_button = tk.Button(window, text="随机话语", command=show_quote)
+random_button.pack()
+
+# 添加新话语按钮
+add_button = tk.Button(window, text="添加话语", command=add_quote)
+add_button.pack()
+
+# 关闭按钮
+close_button = tk.Button(window, text="关闭", command=window.quit)
+close_button.pack()
+
+# 运行主循环
+window.mainloop()
+
