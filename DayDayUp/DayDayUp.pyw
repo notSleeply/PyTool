@@ -6,8 +6,9 @@ import tkinter as tk
 import random
 import os
 
+quotes = [] # quotes.txt 相当于数据库
+
 # 如果文件存在，则从文件中加载话语
-quotes = []
 if os.path.exists("quotes.txt"):
     with open("quotes.txt", "r", encoding="utf-8") as file:
         quotes = [line.strip() for line in file]
@@ -18,7 +19,7 @@ else:
         "我爱你，孙浩男",
     ]
 
-# 保存话语到文件  quotes.txt 相当于数据库
+# 保存话语到文件
 def save_quotes():
     with open("quotes.txt", "w", encoding="utf-8") as file:
         for quote in quotes:
