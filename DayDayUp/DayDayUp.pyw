@@ -6,7 +6,7 @@ import tkinter as tk
 import random
 import os
 
-quotes = [] # quotes.txt 相当于数据库
+quotes = []  # quotes.txt 文件相当于数据库
 
 # 如果文件存在，则从文件中加载话语
 if os.path.exists("quotes.txt"):
@@ -27,17 +27,22 @@ def save_quotes():
 
 # 显示随机话语
 def show_quote():
+    # 从quotes列表中随机选择一个话语并显示在标签上
     quote = random.choice(quotes)
     label.config(text=quote)
 
 # 添加新话语
 def add_quote():
+    # 添加新话语的窗口
     def save_new_quote():
+        # 获取用户输入的新话语并保存
         new_quote = entry.get().strip()
         if new_quote:
             quotes.append(new_quote)
             save_quotes()  # 将新的话语保存到文件
             entry_window.destroy()
+        else:
+            tk.messagebox.showwarning("警告", "输入不能为空！")
 
     entry_window = tk.Toplevel(window)
     entry_window.title("添加新话语")
@@ -51,11 +56,19 @@ window = tk.Tk()
 window.title("励志话语")
 
 # 设置固定窗口大小
-window.geometry("400x250")
+window.geometry("550x250")
 window.resizable(False, False)
 
-# 显示初始话语
-label = tk.Label(window, text=random.choice(quotes), font=("Arial", 20), padx=20, pady=20)
+# 显示初始话语，添加wraplength参数以控制宽度超出时自动换行
+label = tk.Label(
+    window, 
+    text=random.choice(quotes), 
+    font=("Arial", 20), 
+    padx=20, 
+    pady=20, 
+    wraplength=500,  # 设置最大宽度为500像素，超出时换行
+    justify="center"  # 设置文本居中对齐
+)
 label.pack()
 
 # 随机话语按钮
@@ -72,4 +85,3 @@ close_button.pack()
 
 # 运行主循环
 window.mainloop()
-
