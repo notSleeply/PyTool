@@ -71,17 +71,22 @@ label = tk.Label(
 )
 label.pack()
 
+# 关闭按钮放在底部
+close_button = tk.Button(window, text="关闭", command=window.quit)
+close_button.pack(side=tk.BOTTOM, pady=10)
+
+# 创建一个Frame用于放置按钮
+button_frame = tk.Frame(window)
+button_frame.pack(side=tk.BOTTOM, pady=10)
+
 # 随机话语按钮
-random_button = tk.Button(window, text="随机话语", command=show_quote)
-random_button.pack()
+random_button = tk.Button(button_frame, text="随机话语", command=show_quote)
+random_button.pack(side=tk.LEFT, padx=10)
 
 # 添加新话语按钮
-add_button = tk.Button(window, text="添加话语", command=add_quote)
-add_button.pack()
+add_button = tk.Button(button_frame, text="添加话语", command=add_quote)
+add_button.pack(side=tk.LEFT, padx=10)
 
-# 关闭按钮
-close_button = tk.Button(window, text="关闭", command=window.quit)
-close_button.pack()
 
 # 运行主循环
 window.mainloop()
