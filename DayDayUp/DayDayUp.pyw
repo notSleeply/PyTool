@@ -1,92 +1,112 @@
 # 工具打包
 # pip install pyinstaller
-# pyinstaller --onefile --noconsole DayDayUp.pyw  这将在dist文件夹中生成一个DayDayUp.exe文件。
+# pyinstaller --onefile --windowed DayDayUp.pyw  # 这将在dist文件夹中生成一个DayDayUp.exe文件。
 
-import tkinter as tk
-import random
-import os
+import tkinter as tk  # 导入 tkinter，用于创建 GUI 界面
+import random  # 导入 random 库，用于随机选择语录
+import os  # 导入 os 库，用于文件操作
+import sys  # 导入 sys 库，用于退出程序
+from pystray import Icon, MenuItem, Menu  # 导入 pystray 库，用于创建系统托盘图标
+from PIL import Image  # 导入 PIL 库，用于加载图标图片
+from tkinter import messagebox  # 导入 tkinter 消息框，用于提示信息
 
-quotes = []  # quotes.txt 文件相当于数据库
-
-# 如果文件存在，则从文件中加载话语
+# 初始化语录列表。如果 quotes.txt 文件存在，则加载文件内容；否则，设置默认语录。
+quotes = []
 if os.path.exists("quotes.txt"):
     with open("quotes.txt", "r", encoding="utf-8") as file:
-        quotes = [line.strip() for line in file]
+        quotes = [line.strip() for line in file]  # 去除每行的空格，并存入 quotes 列表
 else:
-    # 初始随机话语
-    quotes = [
-        "为了明天的你",
-        "我爱你，孙浩男",
-    ]
+    quotes = ["为了明天的你", "我爱你，孙浩男"]  # 默认语录内容
 
-# 保存话语到文件
+# 定义一个函数，将当前 quotes 列表保存到 "quotes.txt" 文件中。
 def save_quotes():
     with open("quotes.txt", "w", encoding="utf-8") as file:
-        for quote in quotes:
-            file.write(quote + "\n")
+        file.writelines(f"{quote}\n" for quote in quotes)  # 将 quotes 中的每条语录逐行写入文件
 
-# 显示随机话语
+# 定义显示随机语录的函数，从 quotes 列表中选择并更新主窗口标签的文本内容。
 def show_quote():
-    # 从quotes列表中随机选择一个话语并显示在标签上
-    quote = random.choice(quotes)
-    label.config(text=quote)
+    label.config(text=random.choice(quotes))  # 更新标签内容为随机选中的语录
 
-# 添加新话语
+# 定义添加新语录的函数，弹出窗口让用户输入并保存到 quotes 列表和文件中。
 def add_quote():
-    # 添加新话语的窗口
+    # 内部函数：获取用户输入并保存新语录
     def save_new_quote():
-        # 获取用户输入的新话语并保存
-        new_quote = entry.get().strip()
-        if new_quote:
-            quotes.append(new_quote)
-            save_quotes()  # 将新的话语保存到文件
-            entry_window.destroy()
+        new_quote = entry.get().strip()  # 获取并去除输入中的空格
+        if new_quote:  # 检查输入是否为空
+            quotes.append(new_quote)  # 添加新语录到 quotes 列表
+            save_quotes()  # 保存更新后的语录列表到文件
+            entry_window.destroy()  # 关闭输入窗口
         else:
-            tk.messagebox.showwarning("警告", "输入不能为空！")
+            messagebox.showwarning("警告", "输入不能为空！")  # 如果输入为空，弹出警告
 
+    # 创建一个输入新语录的子窗口
     entry_window = tk.Toplevel(window)
     entry_window.title("添加新话语")
-    tk.Label(entry_window, text="请输入新的话语：").pack(pady=5)
-    entry = tk.Entry(entry_window, width=40)
+    tk.Label(entry_window, text="请输入新的话语：").pack(pady=5)  # 输入提示标签
+    entry = tk.Entry(entry_window, width=40)  # 创建输入框
     entry.pack(padx=10, pady=10)
-    tk.Button(entry_window, text="保存", command=save_new_quote).pack(pady=5)
+    tk.Button(entry_window, text="保存", command=save_new_quote).pack(pady=5)  # 创建保存按钮，绑定保存函数
 
-# 创建主窗口
+# 定义退出应用程序的函数，包含停止托盘图标、关闭主窗口、完全退出程序
+def quit_app():
+    global icon  # 声明 icon 为全局变量，以便在函数中操作托盘图标
+    if icon:
+        icon.stop()  # 停止托盘图标
+    window.quit()  # 关闭 Tkinter 主窗口
+    sys.exit()  # 彻底退出程序
+
+
+# 定义窗口关闭事件，将关闭按钮绑定到 quit_app 函数，确保程序完全退出
+def on_window_close():
+    quit_app()  # 调用 quit_app 以关闭程序和托盘图标
+
+# 隐藏窗口;
+def on_window_cover():
+    window.withdraw()
+
+# 初始化托盘图标及其菜单，定义显示和退出菜单项
+def create_tray_icon():
+    global icon  # 声明全局变量 icon，以便其他函数访问
+    try:
+        icon_image = Image.open("icon.ico")  # 加载图标文件
+        icon = Icon("励志话语", icon=icon_image, menu=Menu(MenuItem("显示", show_window), MenuItem("退出", quit_app)))
+        icon.run_detached()  # 以独立线程方式运行托盘图标
+    except Exception as e:
+        messagebox.showerror("错误", f"加载托盘图标失败: {e}")  # 若图标加载失败，弹出错误消息
+        sys.exit()  # 退出程序
+
+# 显示主窗口的函数，用于托盘图标菜单点击后显示主窗口
+def show_window(icon=None, item=None):
+    window.deiconify()  # 取消窗口的隐藏状态，显示主窗口
+
+# 创建 Tkinter 主窗口，并设置标题、尺寸和窗口关闭事件
 window = tk.Tk()
 window.title("励志话语")
+window.geometry("550x250")  # 设置窗口大小
+window.resizable(False, False)  # 禁止调整窗口大小
+window.protocol("WM_DELETE_WINDOW", on_window_close)  # 捕捉关闭事件
 
-# 设置固定窗口大小
-window.geometry("550x250")
-window.resizable(False, False)
-
-# 显示初始话语，添加wraplength参数以控制宽度超出时自动换行
-label = tk.Label(
-    window, 
-    text=random.choice(quotes), 
-    font=("Arial", 20), 
-    padx=20, 
-    pady=20, 
-    wraplength=500,  # 设置最大宽度为500像素，超出时换行
-    justify="center"  # 设置文本居中对齐
-)
+# 创建显示语录的标签，初始化为随机语录，设置字体、边距和对齐方式
+label = tk.Label(window, text=random.choice(quotes), font=("Arial", 20), padx=20, pady=20, wraplength=500, justify="center")
 label.pack()
 
-# 关闭按钮放在底部
-close_button = tk.Button(window, text="关闭", command=window.quit)
-close_button.pack(side=tk.BOTTOM, pady=10)
+# 创建“关闭”按钮，绑定 on_window_close 函数
+tk.Button(window, text="关闭", command=on_window_close).pack(side=tk.BOTTOM, pady=10)
+tk.Button(window, text="隐藏", command=on_window_cover).pack(side=tk.BOTTOM, pady=10)
 
-# 创建一个Frame用于放置按钮
+# 创建底部按钮框架，包含“随机话语”、“添加话语”和“关闭”按钮
 button_frame = tk.Frame(window)
 button_frame.pack(side=tk.BOTTOM, pady=10)
 
-# 随机话语按钮
-random_button = tk.Button(button_frame, text="随机话语", command=show_quote)
-random_button.pack(side=tk.LEFT, padx=10)
-
-# 添加新话语按钮
-add_button = tk.Button(button_frame, text="添加话语", command=add_quote)
-add_button.pack(side=tk.LEFT, padx=10)
+# 创建“随机话语”按钮，绑定 show_quote 函数
+tk.Button(button_frame, text="随机话语", command=show_quote).pack(side=tk.LEFT, padx=10)
+# 创建“添加话语”按钮，绑定 add_quote 函数
+tk.Button(button_frame, text="添加话语", command=add_quote).pack(side=tk.LEFT, padx=10)
 
 
-# 运行主循环
+# 启动托盘图标
+create_tray_icon()
+
+# 运行 Tkinter 主循环，保持界面响应
 window.mainloop()
+
