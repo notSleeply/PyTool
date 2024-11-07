@@ -9,6 +9,10 @@ import sys  # 导入 sys 库，用于退出程序
 from pystray import Icon, MenuItem, Menu  # 导入 pystray 库，用于创建系统托盘图标
 from PIL import Image  # 导入 PIL 库，用于加载图标图片
 from tkinter import messagebox  # 导入 tkinter 消息框，用于提示信息
+from win11toast import toast # 桌面通知库
+
+# 随机时间 单位ms
+TimeRandom = 900000;
 
 # 初始化语录列表。如果 quotes.txt 文件存在，则加载文件内容；否则，设置默认语录。
 quotes = []
@@ -19,7 +23,7 @@ else:
     quotes = ["为了明天的你", "我爱你，孙浩男"]  # 默认语录内容
 
 
-# 定义一个函数，将当前 quotes 列表保存到 "quotes.txt" 文件中。
+# 将当前 quotes 列表保存到 "quotes.txt" 文件中。
 def save_quotes():
     with open("quotes.txt", "w", encoding="utf-8") as file:
         file.writelines(f"{quote}\n" for quote in quotes)  # 将 quotes 中的每条语录逐行写入文件
@@ -27,7 +31,15 @@ def save_quotes():
 
 # 定义显示随机语录的函数，从 quotes 列表中选择并更新主窗口标签的文本内容。
 def show_quote():
-    label.config(text=random.choice(quotes))  # 更新标签内容为随机选中的语录
+    # 显示随机语录在主窗口标签上
+    quote = random.choice(quotes)
+    label.config(text=quote)
+
+    # 发送桌面通知
+    toast("励志话语", quote, duration="short")
+
+    # 定时调用 show_quote
+    window.after(TimeRandom, show_quote)
 
 
 # 定义添加新语录的函数，弹出窗口让用户输入并保存到 quotes 列表和文件中。
@@ -96,31 +108,34 @@ def create_tray_icon():
         messagebox.showerror("错误", f"加载托盘图标失败: {e}")  # 若图标加载失败，弹出错误消息
         sys.exit()  # 退出程序
 
+if __name__ == "__main__":
+    # 创建 Tkinter 主窗口，并设置标题、尺寸和窗口关闭事件
+    window = tk.Tk()
+    window.title("励志话语")
+    window.geometry("650x350")  # 设置窗口大小
+    window.resizable(False, False)  # 禁止调整窗口大小
+    window.protocol("WM_DELETE_WINDOW", on_window_close)  # 捕捉关闭事件
 
-# 创建 Tkinter 主窗口，并设置标题、尺寸和窗口关闭事件
-window = tk.Tk()
-window.title("励志话语")
-window.geometry("650x350")  # 设置窗口大小
-window.resizable(False, False)  # 禁止调整窗口大小
-window.protocol("WM_DELETE_WINDOW", on_window_close)  # 捕捉关闭事件
+    # 创建显示语录的标签，初始化为随机语录，设置字体、边距和对齐方式
+    label = tk.Label(window, text=random.choice(quotes), font=("Arial", 24), padx=10, pady=20, wraplength=500,
+                     justify="center")
+    label.pack()
 
-# 创建显示语录的标签，初始化为随机语录，设置字体、边距和对齐方式
-label = tk.Label(window, text=random.choice(quotes), font=("Arial", 24), padx=10, pady=20, wraplength=500,
-                 justify="center")
-label.pack()
+    # 创建“关闭”和“隐藏”按钮，分别绑定 on_window_close 和 on_window_cover 函数
+    tk.Button(window, text="关闭", command=on_window_close).pack(side=tk.BOTTOM, pady=10)
+    tk.Button(window, text="隐藏", command=on_window_cover).pack(side=tk.BOTTOM, pady=10)
 
-# 创建“关闭”和“隐藏”按钮，分别绑定 on_window_close 和 on_window_cover 函数
-tk.Button(window, text="关闭", command=on_window_close).pack(side=tk.BOTTOM, pady=10)
-tk.Button(window, text="隐藏", command=on_window_cover).pack(side=tk.BOTTOM, pady=10)
+    # 创建底部按钮框架，包含“随机话语”和“添加话语”按钮
+    button_frame = tk.Frame(window)
+    button_frame.pack(side=tk.BOTTOM, pady=10)
+    tk.Button(button_frame, text="随机话语", command=show_quote).pack(side=tk.LEFT, padx=10)
+    tk.Button(button_frame, text="添加话语", command=add_quote).pack(side=tk.LEFT, padx=10)
 
-# 创建底部按钮框架，包含“随机话语”和“添加话语”按钮
-button_frame = tk.Frame(window)
-button_frame.pack(side=tk.BOTTOM, pady=10)
-tk.Button(button_frame, text="随机话语", command=show_quote).pack(side=tk.LEFT, padx=10)
-tk.Button(button_frame, text="添加话语", command=add_quote).pack(side=tk.LEFT, padx=10)
+    # 启动托盘图标
+    create_tray_icon()
 
-# 启动托盘图标
-create_tray_icon()
+    # 初次调用 show_quote，以便定时器生效
+    show_quote()
 
-# 运行 Tkinter 主循环，保持界面响应
-window.mainloop()
+    # 运行 Tkinter 主循环，保持界面响应
+    window.mainloop()
