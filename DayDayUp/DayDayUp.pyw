@@ -28,8 +28,14 @@ def save_quotes():
     with open("quotes.txt", "w", encoding="utf-8") as file:
         file.writelines(f"{quote}\n" for quote in quotes)  # 将 quotes 中的每条语录逐行写入文件
 
+# 随机语录，不发送桌面通知
+def update_quote_only():
+    # 显示随机语录在主窗口标签上
+    quote = random.choice(quotes)
+    label.config(text=quote)
 
-# 定义显示随机语录的函数，从 quotes 列表中选择并更新主窗口标签的文本内容。
+
+# 随机语录
 def show_quote():
     # 显示随机语录在主窗口标签上
     quote = random.choice(quotes)
@@ -128,7 +134,7 @@ if __name__ == "__main__":
     # 创建底部按钮框架，包含“随机话语”和“添加话语”按钮
     button_frame = tk.Frame(window)
     button_frame.pack(side=tk.BOTTOM, pady=10)
-    tk.Button(button_frame, text="随机话语", command=show_quote).pack(side=tk.LEFT, padx=10)
+    tk.Button(button_frame, text="随机话语", command=update_quote_only).pack(side=tk.LEFT, padx=10)
     tk.Button(button_frame, text="添加话语", command=add_quote).pack(side=tk.LEFT, padx=10)
 
     # 启动托盘图标
