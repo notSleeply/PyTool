@@ -11,13 +11,15 @@ from PIL import Image  # 导入 PIL 库，用于加载图标图片
 from tkinter import messagebox  # 导入 tkinter 消息框，用于提示信息
 from win11toast import toast # 桌面通知库
 
-# 随机时间 单位ms
-TimeRandom = 900000;
+
+TimeRandom = 600000;# 随机时间 单位ms
+wordLength = 50; # 显示字数
+txt = "Bible.txt" # 语录文件
 
 # 初始化语录列表。如果 quotes.txt 文件存在，则加载文件内容；否则，设置默认语录。
 quotes = []
-if os.path.exists("quotes.txt"):
-    with open("quotes.txt", "r", encoding="utf-8") as file:
+if os.path.exists(txt):
+    with open(txt, "r", encoding="utf-8") as file:
         quotes = [line.strip() for line in file]  # 去除每行的空格，并存入 quotes 列表
 else:
     quotes = ["为了明天的你", "我爱你，孙浩男"]  # 默认语录内容
@@ -25,38 +27,41 @@ else:
 
 # 将当前 quotes 列表保存到 "quotes.txt" 文件中。
 def save_quotes():
-    with open("quotes.txt", "w", encoding="utf-8") as file:
+    with open(txt, "w", encoding="utf-8") as file:
         file.writelines(f"{quote}\n" for quote in quotes)  # 将 quotes 中的每条语录逐行写入文件
 
 # 随机语录，不发送桌面通知
 def update_quote_only():
     # 显示随机语录在主窗口标签上
     quote = random.choice(quotes)
-    label.config(text=quote)
+    formatted_quote = quote.replace(".", "\n")
+    label.config(text=formatted_quote)
 
 
 # 随机语录
 def show_quote():
     # 显示随机语录在主窗口标签上
     quote = random.choice(quotes)
-    label.config(text=quote)
+    # 在英文逗号处添加换行符，仅在窗口显示
+    formatted_quote = quote.replace(".", "\n")
+    label.config(text=formatted_quote)
 
     # 发送桌面通知
-    toast("励志话语", quote, duration="short")
+    toast("励志话语", formatted_quote, duration="short")
 
     # 定时调用 show_quote
     window.after(TimeRandom, show_quote)
 
 
-# 定义添加新语录的函数，弹出窗口让用户输入并保存到 quotes 列表和文件中。
+# 添加新语录的函数
 def add_quote():
     # 内部函数：获取用户输入并保存新语录
     def save_new_quote():
         new_quote = entry.get().strip()  # 获取并去除输入中的空格
         if not new_quote:
             messagebox.showwarning("警告", "输入不能为空！")  # 如果输入为空，弹出警告
-        elif len(new_quote) > 25:
-            messagebox.showwarning("警告", "输入的语录不能超过25个字符！")  # 如果输入超过25个字符，弹出警告
+        elif len(new_quote) > wordLength:
+            messagebox.showwarning("警告", "输入的语录不能超过50个字符！")
         else:
             quotes.append(new_quote)  # 添加新语录到 quotes 列表
             save_quotes()  # 保存更新后的语录列表到文件
@@ -65,7 +70,7 @@ def add_quote():
     # 创建一个输入新语录的子窗口
     entry_window = tk.Toplevel(window)
     entry_window.title("添加新话语")
-    tk.Label(entry_window, text="请输入新的话语（不超过25个字符）：").pack(pady=5)  # 输入提示标签
+    tk.Label(entry_window, text="请输入新的话语（不超过50个字符）：").pack(pady=5)  # 输入提示标签
     entry = tk.Entry(entry_window, width=40)  # 创建输入框
     entry.pack(padx=10, pady=10)
     tk.Button(entry_window, text="保存", command=save_new_quote).pack(pady=5)  # 创建保存按钮，绑定保存函数
@@ -118,24 +123,31 @@ if __name__ == "__main__":
     # 创建 Tkinter 主窗口，并设置标题、尺寸和窗口关闭事件
     window = tk.Tk()
     window.title("励志话语")
-    window.geometry("650x350")  # 设置窗口大小
+    window.geometry("800x350")  # 设置窗口大小
     window.resizable(False, False)  # 禁止调整窗口大小
     window.protocol("WM_DELETE_WINDOW", on_window_close)  # 捕捉关闭事件
 
     # 创建显示语录的标签，初始化为随机语录，设置字体、边距和对齐方式
-    label = tk.Label(window, text=random.choice(quotes), font=("Arial", 24), padx=10, pady=20, wraplength=500,
-                     justify="center")
+    label = tk.Label(
+        window,  # 父级窗口为主窗口
+        text=random.choice(quotes),  # 显示内容为从 `quotes` 列表中随机选择的一条语录
+        font=("Microsoft YaHei", 24),  # 字体设置为微软雅黑，字号为 24
+        padx=10,  # 设置标签左右内边距为 10 像素
+        pady=20,  # 设置标签上下内边距为 20 像素
+        wraplength=750,  # 设置文本在 750 像素宽度后自动换行
+        justify="center"  # 设置多行文本的对齐方式为居中
+    )
     label.pack()
 
     # 创建“关闭”和“隐藏”按钮，分别绑定 on_window_close 和 on_window_cover 函数
-    tk.Button(window, text="关闭", command=on_window_close).pack(side=tk.BOTTOM, pady=10)
-    tk.Button(window, text="隐藏", command=on_window_cover).pack(side=tk.BOTTOM, pady=10)
+    tk.Button(window, text="关闭", command=on_window_close, font=("Microsoft YaHei", 12)).pack(side=tk.BOTTOM, pady=10)
+    tk.Button(window, text="隐藏", command=on_window_cover, font=("Microsoft YaHei", 12)).pack(side=tk.BOTTOM, pady=10)
 
     # 创建底部按钮框架，包含“随机话语”和“添加话语”按钮
     button_frame = tk.Frame(window)
     button_frame.pack(side=tk.BOTTOM, pady=10)
-    tk.Button(button_frame, text="随机话语", command=update_quote_only).pack(side=tk.LEFT, padx=10)
-    tk.Button(button_frame, text="添加话语", command=add_quote).pack(side=tk.LEFT, padx=10)
+    tk.Button(button_frame, text="随机话语", command=update_quote_only, font=("Microsoft YaHei", 12)).pack(side=tk.LEFT, padx=10)
+    tk.Button(button_frame, text="添加话语", command=add_quote, font=("Microsoft YaHei", 12)).pack(side=tk.LEFT, padx=10)
 
     # 启动托盘图标
     create_tray_icon()
