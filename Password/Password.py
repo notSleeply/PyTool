@@ -2,12 +2,12 @@ import random  # 导入生成随机数的模块
 import string  # 导入字符串处理模块
 
 # 参数部分：用户可以根据需要修改这些参数
-password_length = 16  # 设置密码的长度
+password_length = 12  # 设置密码的长度
 password_count = 5    # 设置生成密码的个数
-use_uppercase = True  # 是否使用大写字母
+use_uppercase = False  # 是否使用大写字母
 use_lowercase = True  # 是否使用小写字母
 use_digits = True     # 是否使用数字
-use_punctuation = True  # 是否使用标点符号
+use_punctuation = False  # 是否使用标点符号
 filename = "password.txt"  # 设置保存密码的文件名
 
 # 根据用户选择的参数，生成字符集

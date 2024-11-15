@@ -13,7 +13,7 @@ from win11toast import toast # 桌面通知库
 
 
 TimeRandom = 600000;# 随机时间 单位ms
-wordLength = 50; # 显示字数
+wordLength = 100; # 显示字数
 txt = "Bible.txt" # 语录文件
 
 # 初始化语录列表。如果 quotes.txt 文件存在，则加载文件内容；否则，设置默认语录。
@@ -34,7 +34,7 @@ def save_quotes():
 def update_quote_only():
     # 显示随机语录在主窗口标签上
     quote = random.choice(quotes)
-    formatted_quote = quote.replace(".", "\n")
+    formatted_quote = quote.replace(".", "\n").replace("：", "\n")
     label.config(text=formatted_quote)
 
 
@@ -43,7 +43,7 @@ def show_quote():
     # 显示随机语录在主窗口标签上
     quote = random.choice(quotes)
     # 在英文逗号处添加换行符，仅在窗口显示
-    formatted_quote = quote.replace(".", "\n")
+    formatted_quote = quote.replace(".", "\n").replace("：", "\n")
     label.config(text=formatted_quote)
 
     # 发送桌面通知
@@ -61,7 +61,7 @@ def add_quote():
         if not new_quote:
             messagebox.showwarning("警告", "输入不能为空！")  # 如果输入为空，弹出警告
         elif len(new_quote) > wordLength:
-            messagebox.showwarning("警告", "输入的语录不能超过50个字符！")
+            messagebox.showwarning("警告", "输入的语录不能超过100个字符！")
         else:
             quotes.append(new_quote)  # 添加新语录到 quotes 列表
             save_quotes()  # 保存更新后的语录列表到文件
@@ -70,7 +70,7 @@ def add_quote():
     # 创建一个输入新语录的子窗口
     entry_window = tk.Toplevel(window)
     entry_window.title("添加新话语")
-    tk.Label(entry_window, text="请输入新的话语（不超过50个字符）：").pack(pady=5)  # 输入提示标签
+    tk.Label(entry_window, text="请输入新的话语（不超过100个字符）：").pack(pady=5)  # 输入提示标签
     entry = tk.Entry(entry_window, width=40)  # 创建输入框
     entry.pack(padx=10, pady=10)
     tk.Button(entry_window, text="保存", command=save_new_quote).pack(pady=5)  # 创建保存按钮，绑定保存函数
@@ -123,8 +123,9 @@ if __name__ == "__main__":
     # 创建 Tkinter 主窗口，并设置标题、尺寸和窗口关闭事件
     window = tk.Tk()
     window.title("励志话语")
-    window.geometry("800x350")  # 设置窗口大小
-    window.resizable(False, False)  # 禁止调整窗口大小
+    window.geometry("800x450")  # 设置窗口大小
+    window.minsize(800, 450)  # 设置最小窗口大小
+    window.resizable(True, True)  # 允许调整窗口大小
     window.protocol("WM_DELETE_WINDOW", on_window_close)  # 捕捉关闭事件
 
     # 创建显示语录的标签，初始化为随机语录，设置字体、边距和对齐方式
