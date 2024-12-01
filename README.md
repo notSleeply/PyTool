@@ -8,4 +8,3 @@
 - Password：自动生成密码
 - TimeTool：定时提醒
 - WebQr：网站二维码生成器
-- DayDayUp：每日小句子
