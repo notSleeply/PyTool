@@ -51,7 +51,6 @@ def generate_multiple_passwords(count, length):
 # 生成多个指定长度的密码
 passwords = generate_multiple_passwords(password_count, password_length)
 
-
 # 将生成的密码追加保存到指定文件中
 save_password_to_file(passwords, filename)
 
