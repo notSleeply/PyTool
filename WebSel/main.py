@@ -9,7 +9,7 @@ from selenium.webdriver.edge.options import Options as EdgeOptions
 from selenium.webdriver.common.by import By
 
 url = "https://github.com/codewithsadee?page=1&tab=repositories"
-waitTime = 5
+waitTime = 2
 waitDownTime = 30
 positionX = 250
 positionY = 0
@@ -30,7 +30,7 @@ def open_option(option):
 # 设置 driver
 def open_driver(driver):
     driver.set_window_position(positionX, positionY)
-    driver.implicitly_wait(waitTime)
+    driver.implicitly_wait(waitDownTime*2)
     driver.get(url)
     return driver
 
@@ -52,13 +52,22 @@ def open_chrome():
 def download_github_repo(driver):
     count = 1
     getCount = get_repo_count()
-    for p in range(1,int(-(-143 // 30))):
-        for i in range(1, 30):  # 修改范围以下载更多页面的仓库
+    for p in range(1,int(-(-143 // 30))+1):
+        for i in range(1, 31):  # 修改范围以下载更多页面的仓库
             time.sleep(waitTime)
             a = driver.find_element(By.XPATH, f'//*[@id="user-repositories-list"]/ul/li[{i}]/div[1]/div[1]/h3/a')
             a.click()
-            codeButton = driver.find_element(By.XPATH, '//*[@id=":R55ab:"]')
-            codeButton.click()
+            time.sleep(waitTime)
+            try:
+                codeButton = driver.find_element(By.XPATH, '//*[@id=":R55ab:"]')
+                codeButton.click()
+            except Exception as e1:
+                try:
+                    codeButton = driver.find_element(By.ID,':R55ab:')
+                    codeButton.click()
+                except Exception as e2:
+                    codeButton = driver.find_elements(By.TAG_NAME, 'button')[23]
+                    codeButton.click()
             time.sleep(waitTime)
             Down = driver.find_element(By.LINK_TEXT, "Download ZIP")
             Down.click()
@@ -90,9 +99,10 @@ def get_repo_count():
         return 0
 
 if __name__ == "__main__":
-    driver = open_chrome()
-    download_github_repo(driver)
-
-    time.sleep(300)
-    driver.quit()
-
+    # driver = open_chrome()
+    # download_github_repo(driver)
+    #
+    # time.sleep(300)
+    # driver.quit()
+    for p in range(1, int(-(-143 // 30))):
+        print(p)
