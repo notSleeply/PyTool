@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>抖音无水印视频下载</title>
+    <style>
+        body {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        input {
+            width: 70%;
+            padding: 8px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        #status {
+            margin-top: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>抖音视频下载器</h2>
+    <input type="text" id="url" placeholder="输入抖音短链接（例如：https://v.douyin.com/xxx）">
+    <button onclick="downloadVideo()">下载视频</button>
+    <div id="status"></div>
+
+    <script>
+        async function downloadVideo() {
+            let userInput = document.getElementById('url').value.trim();
+            const status = document.getElementById('status');
+
+            if (!userInput) {
+                status.innerHTML = "❌ 请输入链接";
+                return;
+            }
+
+            // 使用正则表达式提取抖音URL
+            const urlPattern = /https:\/\/v\.douyin\.com\/[a-zA-Z0-9]+\//;
+            const match = userInput.match(urlPattern);
+            const url = match ? match[0] : null;
+
+            if (!url) {
+                status.innerHTML = "❌ 未找到有效的抖音链接";
+                return;
+            }
+
+            status.innerHTML = "⌛ 解析中...";
+
+            try {
+                // 调用后端API
+                const response = await fetch('http://localhost:5000/parse', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                });
+                const data = await response.json();
+
+                if (data.error) {
+                    status.innerHTML = `❌ ${data.error}`;
+                    return;
+                }
+
+                // 下载视频
+                status.innerHTML = "⌛ 下载中...";
+                const videoResponse = await fetch(data.video_url);
+                const blob = await videoResponse.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = `${data.title}.mp4`;  // 设置文件名
+                a.click();
+                window.URL.revokeObjectURL(downloadUrl);
+                status.innerHTML = "✅ 下载完成！";
+            } catch (error) {
+                status.innerHTML = "❌ 请求失败，请检查链接或稍后重试";
+            }
+        }
+    </script>
+</body>
+
+</html>
